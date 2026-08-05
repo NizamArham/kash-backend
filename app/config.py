@@ -4,15 +4,18 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Get the absolute path to the project root
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
     DEBUG = False
     
     # Check if running on Render or using SQLite
     if os.getenv('RENDER') or os.getenv('USE_SQLITE') == 'True':
-        # Use SQLite for Render deployment
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///data.sqlite3'
-        print("✅ Using SQLite database (Render)")
+        # Use SQLite for Render deployment with ABSOLUTE path
+        SQLALCHEMY_DATABASE_URI = f'sqlite:///{os.path.join(BASE_DIR, "data.sqlite3")}'
+        print(f"✅ Using SQLite database (Render) at: {SQLALCHEMY_DATABASE_URI}")
     else:
         # Use MySQL locally (XAMPP)
         DB_SOCKET = os.getenv('DB_SOCKET')
