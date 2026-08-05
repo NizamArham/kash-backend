@@ -11,7 +11,7 @@ class Config:
     # Check if running on Render or using SQLite
     if os.getenv('RENDER') or os.getenv('USE_SQLITE') == 'True':
         # Use SQLite for Render deployment
-        SQLALCHEMY_DATABASE_URI = 'sqlite:///kash_data.db'
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///data.sqlite3'
         print("✅ Using SQLite database (Render)")
     else:
         # Use MySQL locally (XAMPP)
