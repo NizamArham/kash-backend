@@ -21,8 +21,8 @@ with app.app_context():
         except Exception as e:
             print(f"⚠️ Error reading file: {e}")
     
-    db.create_all()
-    print("✅ Tables verified/created")
+    # db.create_all()
+    print("✅ Using existing database file")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5001, debug=True)
