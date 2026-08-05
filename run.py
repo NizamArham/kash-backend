@@ -3,6 +3,15 @@ from app.extensions import db
 import os
 import sqlite3
 
+# Find all .sqlite3 files in the project
+print("🔍 Searching for database files...")
+for root, dirs, files in os.walk('.'):
+    for file in files:
+        if file.endswith('.sqlite3'):
+            path = os.path.join(root, file)
+            size = os.path.getsize(path)
+            print(f"📁 Found: {path} ({size} bytes)") 
+
 app = create_app(os.getenv('FLASK_ENV', 'development'))
 
 with app.app_context():
