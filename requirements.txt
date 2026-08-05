@@ -1,0 +1,10 @@
+Flask==2.3.3
+Flask-CORS==4.0.0
+Flask-SQLAlchemy==3.0.5
+Flask-Migrate==4.0.5
+marshmallow==3.19.0
+marshmallow-sqlalchemy==0.30.0
+PyMySQL==1.1.0
+python-dotenv==1.0.0
+setuptools==68.2.2
+pytz==2024.1
