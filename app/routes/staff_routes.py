@@ -13,6 +13,7 @@ def get_sl_time():
     """Return current Sri Lanka time"""
     return datetime.now(SL_TIMEZONE)
 
+
 # ============================================================
 # GET ALL STAFF (Including Terminated)
 # ============================================================
@@ -498,6 +499,91 @@ def logout():
 
 
 # ============================================================
+# SESSION VALIDATION - ✅ FIXED: Now at top level!
+# ============================================================
+@staff_bp.route('/validate-session', methods=['OPTIONS', 'POST'])
+def validate_session():
+    """Validate if the current session/token is still valid"""
+    
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        response = jsonify({})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, X-Session-ID')
+        response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
+        return response, 200
+    
+    try:
+        data = request.json or {}
+        employee_id = data.get('employee_id')
+        
+        if not employee_id:
+            return jsonify({
+                'valid': False, 
+                'message': 'Employee ID required'
+            }), 400
+        
+        # Check if employee exists
+        employee = Employee.query.get(employee_id)
+        if not employee:
+            return jsonify({
+                'valid': False, 
+                'message': 'Employee not found'
+            }), 404
+        
+        # Check system access and active flags
+        system_access = SystemAccess.query.filter_by(employee_id=employee.id).first()
+        
+        # Check if employee is active and has system access
+        is_active = True
+        role = None
+        username = None
+        
+        if system_access:
+            is_active = bool(system_access.is_active)
+            role = system_access.role
+            username = system_access.username
+        
+        # If employee status is not active OR system access is inactive
+        if employee.employee_status != 'active' or not is_active:
+            return jsonify({
+                'valid': False,
+                'employee': None,
+                'message': 'Account is not active'
+            }), 200
+        
+        # Optional: Validate session ID matches (if you want to track active sessions)
+        session_id = request.headers.get('X-Session-ID')
+        if session_id and system_access:
+            # Check if the session ID matches the stored one
+            if system_access.current_session_id and system_access.current_session_id != session_id:
+                return jsonify({
+                    'valid': False,
+                    'employee': None,
+                    'message': 'Session expired or invalid'
+                }), 200
+        
+        return jsonify({
+            'valid': True,
+            'employee': {
+                'id': employee.id,
+                'first_name': employee.first_name,
+                'last_name': employee.last_name,
+                'email': employee.email,
+                'role': role or 'cashier',
+                'username': username
+            }
+        }), 200
+        
+    except Exception as e:
+        print('❌ Validate session error:', str(e))
+        return jsonify({
+            'valid': False, 
+            'message': str(e)
+        }), 500
+
+
+# ============================================================
 # VERIFY PASSWORD
 # ============================================================
 @staff_bp.route('/verify-password', methods=['OPTIONS', 'POST'])
@@ -589,3 +675,4 @@ def get_filter_options():
     except Exception as e:
         print('Error fetching filter options:', str(e))
         return jsonify({'success': False, 'error': str(e)}), 500
+    
