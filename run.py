@@ -6,7 +6,7 @@ app = create_app(os.getenv('FLASK_ENV', 'development'))
 
 # Debug: Check if database file exists
 with app.app_context():
-    db_path = os.path.abspath('ecom_store.db')
+    db_path = os.path.abspath('data.sqlite3.db')
     print(f"📁 Database file path: {db_path}")
     print(f"📁 Does the file exist? {os.path.exists(db_path)}")
     
