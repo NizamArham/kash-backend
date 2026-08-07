@@ -1,0 +1,863 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.0
+-- https://www.phpmyadmin.net/
+--
+-- Host: localhost
+-- Generation Time: Aug 05, 2026 at 03:32 AM
+-- Server version: 10.4.27-MariaDB
+-- PHP Version: 8.2.0
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `ecom_store`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alembic_version`
+--
+
+CREATE TABLE `alembic_version` (
+  `version_num` varchar(32) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `alembic_version`
+--
+
+INSERT INTO `alembic_version` (`version_num`) VALUES
+('3e75c1f78459');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `cashier_ledger`
+--
+
+CREATE TABLE `cashier_ledger` (
+  `id` int(11) NOT NULL,
+  `cashier_id` int(11) NOT NULL,
+  `transaction_type` enum('sale','refund','payment_received','cash_withdrawal','cash_deposit','expense','adjustment') NOT NULL,
+  `reference_id` varchar(100) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `debit` decimal(10,2) DEFAULT 0.00,
+  `credit` decimal(10,2) DEFAULT 0.00,
+  `balance` decimal(10,2) NOT NULL,
+  `payment_method` enum('cash','card','bank_transfer','online') NOT NULL,
+  `payment_details` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payment_details`)),
+  `transaction_date` datetime DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `session_id` varchar(100) DEFAULT NULL,
+  `is_posted` tinyint(1) DEFAULT 0,
+  `posted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cashier_ledger`
+--
+
+INSERT INTO `cashier_ledger` (`id`, `cashier_id`, `transaction_type`, `reference_id`, `description`, `debit`, `credit`, `balance`, `payment_method`, `payment_details`, `transaction_date`, `created_at`, `updated_at`, `session_id`, `is_posted`, `posted_at`) VALUES
+(1, 2, 'sale', 'ORD-20260715-8099', 'Order #ORD-20260715-8099 - Sale', '1500.00', '0.00', '1500.00', 'cash', '{\"order_id\": 1}', '2026-07-15 10:05:13', '2026-07-15 04:35:13', '2026-07-23 13:06:50', NULL, 0, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `courier_cod_ledger`
+--
+
+CREATE TABLE `courier_cod_ledger` (
+  `id` int(11) NOT NULL,
+  `delivery_partner_id` int(11) NOT NULL,
+  `transaction_type` enum('order_cod','payment_received','adjustment') NOT NULL,
+  `reference_id` varchar(100) DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `debit` decimal(10,2) DEFAULT 0.00,
+  `credit` decimal(10,2) DEFAULT 0.00,
+  `balance` decimal(10,2) NOT NULL,
+  `transaction_date` datetime DEFAULT current_timestamp(),
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `customers`
+--
+
+CREATE TABLE `customers` (
+  `id` int(11) NOT NULL,
+  `first_name` varchar(100) NOT NULL,
+  `last_name` varchar(100) NOT NULL,
+  `email` varchar(255) DEFAULT NULL,
+  `phone` varchar(20) NOT NULL,
+  `alternative_phone` varchar(20) DEFAULT NULL,
+  `dob` date DEFAULT NULL,
+  `gender` enum('male','female','other') DEFAULT NULL,
+  `tier` enum('bronze','silver','gold','platinum') DEFAULT 'bronze',
+  `loyalty_points` int(11) DEFAULT 0,
+  `total_orders` int(11) DEFAULT 0,
+  `last_order_date` date DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `deleted_by` int(11) DEFAULT NULL,
+  `restored_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `customers`
+--
+
+INSERT INTO `customers` (`id`, `first_name`, `last_name`, `email`, `phone`, `alternative_phone`, `dob`, `gender`, `tier`, `loyalty_points`, `total_orders`, `last_order_date`, `notes`, `is_active`, `deleted_at`, `deleted_by`, `restored_at`, `created_at`, `updated_at`) VALUES
+(1, 'M&M', 'Clothing', 'nizammarham38@icloud.com', '0705500174', '0774470174', '2002-04-15', 'male', 'bronze', 0, 0, NULL, 'Regular Customer', 1, NULL, NULL, '2026-07-14 13:00:20', '2026-07-14 11:54:32', '2026-07-14 13:10:37'),
+(2, 'Malindi', 'Piyumika', 'piyumiliyanage15@gmail.com', '0715563559', '+447757602166', '2003-03-15', 'female', 'bronze', 0, 0, NULL, '', 1, NULL, NULL, NULL, '2026-07-14 16:19:11', '2026-07-14 16:19:11'),
+(3, 'Heshani', 'Vishwani', 'vishwaniwasantha271@gmail.com', '0741464788', NULL, '2001-06-06', 'male', 'bronze', 0, 0, NULL, '', 1, NULL, NULL, NULL, '2026-07-16 16:35:26', '2026-07-16 16:35:26'),
+(4, 'Risni', 'Ahamed', NULL, '0764242456', NULL, '1995-03-06', 'male', 'bronze', 0, 0, NULL, '', 1, NULL, NULL, NULL, '2026-07-28 16:06:10', '2026-07-28 16:06:10');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `customer_addresses`
+--
+
+CREATE TABLE `customer_addresses` (
+  `id` int(11) NOT NULL,
+  `customer_id` int(11) NOT NULL,
+  `type` enum('home','office','other') DEFAULT 'home',
+  `is_default` tinyint(1) DEFAULT 0,
+  `address_line1` varchar(255) NOT NULL,
+  `address_line2` varchar(255) DEFAULT NULL,
+  `city` varchar(100) NOT NULL,
+  `postal_code` varchar(20) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `customer_addresses`
+--
+
+INSERT INTO `customer_addresses` (`id`, `customer_id`, `type`, `is_default`, `address_line1`, `address_line2`, `city`, `postal_code`, `created_at`, `updated_at`) VALUES
+(1, 1, 'home', 1, '78/2, ', 'Anderson Road', 'Colombo', '00100', '2026-07-14 17:24:32', '2026-07-14 17:24:32'),
+(2, 1, 'home', 0, '54/2,', 'Lady M\'clamms Drive', 'Nuwara Eliya', '22200', '2026-07-14 17:27:11', '2026-07-14 17:27:11'),
+(3, 2, 'home', 1, '94, Nawam Mawatha,', 'Hawa Eliya', 'Kandy', '20000', '2026-07-14 21:49:11', '2026-07-14 21:49:11'),
+(4, 2, 'other', 0, '92, Broadway,', 'Treforrest', 'Pontypridd', 'CF371B', '2026-07-14 21:50:34', '2026-07-14 21:50:34'),
+(5, 3, 'home', 1, 'Aluthgewaththa, ', 'Gurubebila,', 'Galle', '80000', '2026-07-16 22:05:26', '2026-07-16 22:05:26'),
+(6, 4, 'home', 1, '160', 'Kumarathunga Mw', 'Matara', '81000', '2026-07-28 21:36:10', '2026-07-28 21:36:10');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `delivery_partners`
+--
+
+CREATE TABLE `delivery_partners` (
+  `id` int(11) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `code` varchar(50) NOT NULL,
+  `fee` decimal(10,2) DEFAULT 0.00,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `delivery_partners`
+--
+
+INSERT INTO `delivery_partners` (`id`, `name`, `code`, `fee`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'CityPack by Advantis', 'citypack', '400.00', 1, '2026-07-15 09:13:22', '2026-07-15 09:13:22'),
+(2, 'DEX by Daraz', 'dex', '400.00', 1, '2026-07-15 09:13:22', '2026-07-15 09:13:22'),
+(3, 'M&M Express (Local Delivery)', 'mnm', '200.00', 1, '2026-07-15 09:13:22', '2026-07-15 09:13:22'),
+(4, 'Store Pickup', 'pickup', '0.00', 1, '2026-07-15 09:13:22', '2026-07-15 09:13:22');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employees`
+--
+
+CREATE TABLE `employees` (
+  `id` int(11) NOT NULL,
+  `employee_id` varchar(20) NOT NULL,
+  `first_name` varchar(100) NOT NULL,
+  `last_name` varchar(100) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone` varchar(20) NOT NULL,
+  `alternative_phone` varchar(20) DEFAULT NULL,
+  `dob` date NOT NULL,
+  `gender` enum('male','female','other') NOT NULL,
+  `address1` varchar(255) NOT NULL,
+  `address2` varchar(255) DEFAULT NULL,
+  `city` varchar(100) NOT NULL,
+  `postal_code` varchar(20) DEFAULT NULL,
+  `nic` varchar(20) NOT NULL,
+  `hire_date` date NOT NULL,
+  `department` varchar(100) DEFAULT NULL,
+  `position` varchar(100) NOT NULL,
+  `base_salary` decimal(10,2) NOT NULL,
+  `reports_to` int(11) DEFAULT NULL,
+  `bank_name` varchar(100) NOT NULL,
+  `bank_branch` varchar(100) DEFAULT NULL,
+  `account_number` varchar(50) NOT NULL,
+  `account_holder_name` varchar(255) NOT NULL,
+  `employee_status` enum('active','on_leave','suspended','terminated') DEFAULT 'active',
+  `status_reason` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `employees`
+--
+
+INSERT INTO `employees` (`id`, `employee_id`, `first_name`, `last_name`, `email`, `phone`, `alternative_phone`, `dob`, `gender`, `address1`, `address2`, `city`, `postal_code`, `nic`, `hire_date`, `department`, `position`, `base_salary`, `reports_to`, `bank_name`, `bank_branch`, `account_number`, `account_holder_name`, `employee_status`, `status_reason`, `created_at`, `updated_at`) VALUES
+(2, 'EMP-001', 'Nizam', 'Arham', 'nizammarham38@icloud.com', '+94774470174', NULL, '2002-04-15', 'male', '78/2, ', 'Anderson Road,', 'Dehiwala', '10350', '200210602125', '2025-01-24', 'Management', 'Bosa', '10000.00', NULL, 'Commercial Bank', 'Nuwara Eliya', '8008267593', 'NM Arham', 'active', 'Deleted by admin', '2026-07-14 16:22:45', '2026-07-15 00:42:00');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `loyalty_transactions`
+--
+
+CREATE TABLE `loyalty_transactions` (
+  `id` int(11) NOT NULL,
+  `customer_id` int(11) NOT NULL,
+  `points` int(11) NOT NULL,
+  `balance_after` int(11) NOT NULL,
+  `reason` varchar(255) NOT NULL,
+  `source` enum('purchase','promotion','manual_add','redeem','expiry') DEFAULT 'manual_add',
+  `reference_id` int(11) DEFAULT NULL,
+  `processed_by` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `orders`
+--
+
+CREATE TABLE `orders` (
+  `id` int(11) NOT NULL,
+  `order_number` varchar(50) NOT NULL,
+  `customer_id` int(11) DEFAULT NULL,
+  `staff_id` int(11) NOT NULL,
+  `order_type` enum('in-store','online') DEFAULT 'in-store',
+  `order_status` enum('pending','processing','completed','cancelled','shipped','delivered') DEFAULT 'pending',
+  `payment_method` enum('cash','card','bank_transfer','full_online','products_online','delivery_online','full_cod') DEFAULT 'cash',
+  `payment_status` enum('pending','paid','failed','refunded') DEFAULT 'pending',
+  `subtotal` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `discount_total` decimal(10,2) DEFAULT 0.00,
+  `delivery_fee` decimal(10,2) DEFAULT 0.00,
+  `total_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `cash_received` decimal(10,2) DEFAULT NULL,
+  `change_amount` decimal(10,2) DEFAULT NULL,
+  `loyalty_points_used` int(11) DEFAULT 0,
+  `loyalty_points_earned` int(11) DEFAULT 0,
+  `coupon_code` varchar(50) DEFAULT NULL,
+  `coupon_discount` decimal(10,2) DEFAULT 0.00,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `delivery_partner_id` int(11) DEFAULT NULL,
+  `shipping_tracking_no` varchar(100) DEFAULT NULL,
+  `delivery_address` text DEFAULT NULL,
+  `cod_amount` decimal(10,2) DEFAULT 0.00,
+  `cod_collected` tinyint(1) DEFAULT 0,
+  `cod_collected_date` datetime DEFAULT NULL,
+  `courier_payment_id` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `orders`
+--
+
+INSERT INTO `orders` (`id`, `order_number`, `customer_id`, `staff_id`, `order_type`, `order_status`, `payment_method`, `payment_status`, `subtotal`, `discount_total`, `delivery_fee`, `total_amount`, `cash_received`, `change_amount`, `loyalty_points_used`, `loyalty_points_earned`, `coupon_code`, `coupon_discount`, `notes`, `created_at`, `updated_at`, `delivery_partner_id`, `shipping_tracking_no`, `delivery_address`, `cod_amount`, `cod_collected`, `cod_collected_date`, `courier_payment_id`) VALUES
+(1, 'OCCP-26033-5678', 2, 2, 'in-store', 'completed', 'cash', 'paid', '1500.00', '0.00', '0.00', '1500.00', '2000.00', '500.00', 0, 0, NULL, '0.00', NULL, '2026-07-15 04:35:13', '2026-07-15 17:07:42', NULL, NULL, NULL, '0.00', 0, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_items`
+--
+
+CREATE TABLE `order_items` (
+  `id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `product_variant_id` int(11) NOT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `size` varchar(50) DEFAULT NULL,
+  `color` varchar(50) DEFAULT NULL,
+  `sku` varchar(100) DEFAULT NULL,
+  `quantity` int(11) NOT NULL DEFAULT 1,
+  `unit_price` decimal(10,2) NOT NULL,
+  `total_price` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `order_id`, `product_variant_id`, `product_name`, `size`, `color`, `sku`, `quantity`, `unit_price`, `total_price`, `created_at`) VALUES
+(1, 1, 1, 'Test Product', 'M', 'Black', 'TEST001', 2, '750.00', '1500.00', '2026-07-15 04:35:13');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `products`
+--
+
+CREATE TABLE `products` (
+  `id` int(11) NOT NULL,
+  `product_name` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `category` varchar(100) NOT NULL,
+  `sub_category` varchar(100) NOT NULL,
+  `gender` varchar(20) DEFAULT NULL,
+  `brand` varchar(100) DEFAULT NULL,
+  `base_price` decimal(10,2) NOT NULL,
+  `cost_price` decimal(10,2) DEFAULT NULL,
+  `weight` decimal(8,3) DEFAULT NULL,
+  `keywords` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`keywords`)),
+  `status` varchar(20) DEFAULT NULL,
+  `total_quantity` int(11) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `products`
+--
+
+INSERT INTO `products` (`id`, `product_name`, `description`, `category`, `sub_category`, `gender`, `brand`, `base_price`, `cost_price`, `weight`, `keywords`, `status`, `total_quantity`, `created_at`, `updated_at`) VALUES
+(1, 'Pro Training Shorts', 'Compression shorts for athletic training and gym workouts.', 'Activewear', 'Compression Wear', 'Men', 'Nike', '2800.00', '1750.00', '0.200', '[\"forGym\", \"workout\", \"running\", \"myFav\"]', 'active', 10, '2026-07-13 17:16:54', '2026-07-13 17:16:54'),
+(2, 'Linen Easy Short', 'Linen Short, Adjustable Waist, 2-Pocket (RZN)', 'Shorts', 'Linen Shorts', 'Women', 'Gap', '1400.00', '900.00', '0.250', '[\"summer\", \"linen\", \"comfy\"]', 'active', 24, '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(3, 'Scanton Slim Cargo Jogger ', 'With Lables', 'Pants / Trousers', 'Joggers', 'Men', 'Tommy Hilfiger', '5600.00', '3900.00', '0.500', '[\"cargo jogger\", \"WhiteLable\"]', 'low_stock', 2, '2026-07-17 00:24:08', '2026-07-17 00:24:08'),
+(4, 'Denton Chino Straight Fit Pant', 'With Lable', 'Pants / Trousers', 'Chinos', 'Men', 'Tommy Hilfiger', '12000.00', '4500.00', NULL, '[\"myFav\", \"WhiteLable\"]', 'low_stock', 3, '2026-07-17 00:33:17', '2026-07-17 00:33:17'),
+(5, 'Denton Slim Straight Fit Pant', 'With Lable', 'Pants / Trousers', 'Chinos', 'Men', 'Tommy Hilfiger', '12000.00', '4500.00', '0.500', '[\"myFav\", \"WhiteLable\"]', 'low_stock', 4, '2026-07-17 00:40:12', '2026-07-17 00:40:12'),
+(6, 'Premium Dover Reg Straight Fit Chino ', 'Green 2 Pcs Goes Bleecker Slim & 1 With Straight ', 'Pants / Trousers', 'Chinos', 'Men', 'Tommy Hilfiger', '12000.00', '4500.00', '0.500', '[\"myFav\", \"LinenCotton\"]', 'low_stock', 4, '2026-07-17 00:43:53', '2026-07-17 00:43:53'),
+(7, 'Bleecker Chino Slim Fit Pant', 'With Lable', 'Pants / Trousers', 'Chinos', 'Men', 'Tommy Hilfiger', '12000.00', '4500.00', '0.500', '[\"myFav\", \"White Lable\"]', 'low_stock', 7, '2026-07-17 00:49:05', '2026-07-17 00:49:05'),
+(8, 'Modern Baggy Khakis', 'With Lables', 'Pants / Trousers', 'Baggy Fit', 'Men', 'Gap', '7500.00', '4500.00', '0.800', '[\"BaggyFit\"]', 'low_stock', 1, '2026-07-17 01:01:49', '2026-07-17 01:01:49'),
+(9, 'Standard Straight Chinos', 'Back pocket 2 letter logo Straight fit ', 'Pants / Trousers', 'Chinos', 'Men', 'Calvin Klein', '7800.00', '3200.00', NULL, '[\"WhiteLable\", \"StraightFit\", \"Chino\"]', 'active', 10, '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(10, '5357 Twill Cotton Regular Fit Pant ', 'Washed Heavy Pants ', 'Pants / Trousers', 'Regular Fit', 'Men', 'GANT', '4200.00', '2650.00', '0.800', '[\"myFav\", \"everyday\"]', 'low_stock', 4, '2026-07-17 01:14:27', '2026-07-17 01:14:27'),
+(11, 'Linen Regular Fit LS Shirt ', 'Made in Sri Lanka Factory Outlet', 'Shirts', 'Linen', 'Men', 'GANT', '5990.00', '3400.00', '0.500', '[\"myFav\", \"Linen\", \"FactoryOutlet\", \"Long Sleeve\"]', 'active', 80, '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(12, 'Linen Regular Fit SS Shirt', 'Short Sleeve', 'Shirts', 'Linen', 'Men', 'GANT', '5990.00', '3400.00', '0.600', '[\"myFav\", \"Linen\"]', 'active', 38, '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(13, 'Bermuda K10K107164 Short', 'No Belt included', 'Shorts', 'Chino Shorts', 'Men', 'Calvin Klein', '4500.00', '2200.00', '0.500', '[\"Short\", \"Branded\", \"Summer\"]', 'low_stock', 1, '2026-07-19 18:29:15', '2026-07-19 18:29:15'),
+(14, 'Modern Straight Khakis', 'Straight Droit ', 'Pants / Trousers', 'Chinos', 'Men', 'Gap', '5490.00', '2950.00', '0.800', '[\"StraightFit\", \"Chino\", \"WhitePant\"]', 'low_stock', 1, '2026-07-19 18:39:55', '2026-07-19 18:39:55'),
+(15, 'Commuter Wide Leg Cargo Pant', 'Wide Leg W/30', 'Pants / Trousers', 'Cargo', 'Women', 'Calvin Klein', '6450.00', '2950.00', '0.700', '[\"myFav\", \"WideLeg\", \"Cargo\"]', 'low_stock', 1, '2026-07-19 18:47:31', '2026-07-19 18:47:31'),
+(16, 'Pallas Polo T Shirt ', 'Regular Fit No Packings ', 'T-Shirts', 'Polo', 'Men', 'Boss', '6500.00', '3400.00', NULL, '[\"myFav\", \"TShirt\", \"Branded\"]', 'active', 29, '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(17, 'Ladies Wideleg Denim TDRK', 'Wide Leg Mix Lot', 'Pants / Trousers', 'Baggy Fit', 'Women', 'Levi\'s', '4590.00', '2300.00', '1.000', '[\"Denim\", \"Wideleg\"]', 'active', 26, '2026-07-30 14:08:56', '2026-07-30 14:08:56');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `product_variants`
+--
+
+CREATE TABLE `product_variants` (
+  `id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `color` varchar(50) NOT NULL,
+  `size` varchar(20) NOT NULL,
+  `quantity` int(11) DEFAULT NULL,
+  `sku` varchar(100) NOT NULL,
+  `barcode` varchar(50) DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `product_variants`
+--
+
+INSERT INTO `product_variants` (`id`, `product_id`, `color`, `size`, `quantity`, `sku`, `barcode`, `created_at`, `updated_at`) VALUES
+(1, 1, 'black', 'M', 1, 'ACT-ME-PRO-BL-M-851', '890629554169797', '2026-07-13 17:16:54', '2026-07-15 10:05:13'),
+(2, 1, 'gray', 'M', 3, 'ACT-ME-PRO-GR-M-634', '890629800116039', '2026-07-13 17:16:54', '2026-07-13 17:16:54'),
+(3, 1, 'gray', 'L', 4, 'ACT-ME-PRO-GR-L-364', '890629842455238', '2026-07-13 17:16:54', '2026-07-13 17:16:54'),
+(4, 2, 'pink', 'XXS', 1, 'SHO-WO-GP -PI-XXS-918', '890050186709794', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(5, 2, 'pink', 'XS', 2, 'SHO-WO-GP -PI-XS-170', '890050306930119', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(6, 2, 'brown', 'XS', 1, 'SHO-WO-GP -BR-XS-839', '890050545775882', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(7, 2, 'white', 'XS', 4, 'SHO-WO-GP -WH-XS-174', '890050631193698', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(8, 2, 'white', 'S', 3, 'SHO-WO-GP -WH-S-791', '890050916254455', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(9, 2, 'pink', 'S', 3, 'SHO-WO-GP -PI-S-316', '890051041915324', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(10, 2, 'pink', 'M', 2, 'SHO-WO-GP -PI-M-570', '890051108227194', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(11, 2, 'white', 'M', 1, 'SHO-WO-GP -WH-M-718', '890051219418026', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(12, 2, 'black', 'M', 1, 'SHO-WO-GP -BL-M-815', '890051363461699', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(13, 2, 'white', 'L', 2, 'SHO-WO-GP -WH-L-13', '890051513696449', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(14, 2, 'pink', 'L', 2, 'SHO-WO-GP -PI-L-872', '890051634978550', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(15, 2, 'brown', 'L', 1, 'SHO-WO-GP -BR-L-323', '890051698282425', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(16, 2, 'pink', 'XL', 1, 'SHO-WO-GP -PI-XL-710', '890051762922647', '2026-07-16 12:34:14', '2026-07-16 12:34:14'),
+(17, 3, 'navy', '32/32', 1, 'PAN-ME-TH -NA-323-856', '890478133685079', '2026-07-17 00:24:08', '2026-07-17 00:24:08'),
+(18, 3, 'green', '32/32', 1, 'PAN-ME-TH -GR-323-368', '890478214038140', '2026-07-17 00:24:08', '2026-07-17 00:24:08'),
+(19, 4, 'navy', '32/32', 2, 'PAN-ME-TH -NA-323-279', '890480643491235', '2026-07-17 00:33:17', '2026-07-17 00:33:17'),
+(20, 4, 'whitish', '32/32', 1, 'PAN-ME-TH -WH-323-284', '890482820012319', '2026-07-17 00:33:17', '2026-07-17 00:33:17'),
+(21, 5, 'khaki', '32/32', 1, 'PAN-ME-TH -KH-323-727', '890485145737084', '2026-07-17 00:40:12', '2026-07-17 00:40:12'),
+(22, 5, 'green', '32/32', 1, 'PAN-ME-TH -GR-323-332', '890485816458991', '2026-07-17 00:40:12', '2026-07-17 00:40:12'),
+(23, 5, 'gray', '32/32', 2, 'PAN-ME-TH -GR-323-92', '890486237844306', '2026-07-17 00:40:12', '2026-07-17 00:40:12'),
+(24, 6, 'black', '32/32', 1, 'PAN-ME-TH -BL-323-88', '890489714224308', '2026-07-17 00:43:53', '2026-07-17 00:43:53'),
+(25, 6, 'green', '32/32', 3, 'PAN-ME-TH -GR-323-873', '890489983715565', '2026-07-17 00:43:53', '2026-07-17 00:43:53'),
+(26, 6, 'white', '32/32', 1, 'PAN-ME-TH -WH-323-121', '890490098941876', '2026-07-17 00:43:53', '2026-07-17 00:43:53'),
+(27, 7, 'navy', '34/34', 2, 'PAN-ME-TH -NA-343-333', '890491729631600', '2026-07-17 00:49:05', '2026-07-17 00:49:05'),
+(28, 7, 'black', '34/32', 1, 'PAN-ME-TH -BL-343-243', '890492229737923', '2026-07-17 00:49:05', '2026-07-17 00:49:05'),
+(29, 7, 'washed green', '34/34', 1, 'PAN-ME-TH -WA-343-403', '890492503628156', '2026-07-17 00:49:05', '2026-07-17 00:49:05'),
+(30, 7, 'ash', '34/32', 1, 'PAN-ME-TH -AS-343-309', '890492698237198', '2026-07-17 00:49:05', '2026-07-17 00:49:05'),
+(31, 7, 'light khaki', '32/32', 1, 'PAN-ME-TH -LI-323-936', '890492873981263', '2026-07-17 00:49:05', '2026-07-17 00:49:05'),
+(32, 7, 'ocean blue', '34/34', 1, 'PAN-ME-TH -OC-343-564', '890493133920349', '2026-07-17 00:49:05', '2026-07-17 00:49:05'),
+(33, 8, 'olive green', '32/32', 1, 'PAN-ME-MOD-OL-323-7', '890500970617092', '2026-07-17 01:01:49', '2026-07-17 01:01:49'),
+(34, 9, 'light khaki', '34/30', 1, 'PAN-ME-STA-LI-343-346', '890502865077831', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(35, 9, 'black', '34/32', 2, 'PAN-ME-STA-BL-343-30', '890503185576918', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(36, 9, 'black', '36/32', 1, 'PAN-ME-STA-BL-363-92', '890503391693761', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(37, 9, 'blue', '34/32', 1, 'PAN-ME-STA-BL-343-8', '890503644478166', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(38, 9, 'black', '33/32', 1, 'PAN-ME-STA-BL-333-557', '890503911924866', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(39, 9, 'blue', '32/32', 1, 'PAN-ME-STA-BL-323-607', '890504084223979', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(40, 9, 'light khaki', '36/30', 1, 'PAN-ME-STA-LI-363-756', '890504277626394', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(41, 9, 'blue', '30/32', 1, 'PAN-ME-STA-BL-303-359', '890504873504936', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(42, 9, 'light khaki', '34/32', 1, 'PAN-ME-STA-LI-343-885', '890505159467229', '2026-07-17 01:08:42', '2026-07-17 01:08:42'),
+(43, 10, 'navy', '31/34', 1, 'PAN-ME-535-NA-313-449', '890507650213756', '2026-07-17 01:14:27', '2026-07-17 01:14:27'),
+(44, 10, 'light olive', '33/32', 3, 'PAN-ME-535-LI-333-78', '890508171926116', '2026-07-17 01:14:27', '2026-07-17 01:14:27'),
+(45, 11, 'denim', 'M', 7, 'SHI-ME-LIN-DE-M-52', '890093587702787', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(46, 11, 'yellow', 'M', 2, 'SHI-ME-LIN-YE-M-640', '890093844735140', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(47, 11, 'royal blue', 'M', 2, 'SHI-ME-LIN-RO-M-175', '890093977154059', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(48, 11, 'pink', 'M', 4, 'SHI-ME-LIN-PI-M-774', '890094588634309', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(49, 11, 'sandler stripe', 'M', 3, 'SHI-ME-LIN-SA-M-259', '890094797289316', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(50, 11, 'dust green', 'M', 2, 'SHI-ME-LIN-DU-M-483', '890095032410255', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(51, 11, 'sky blue', 'M', 4, 'SHI-ME-LIN-SK-M-874', '890095165367169', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(52, 11, 'sky blue stripe', 'M', 4, 'SHI-ME-LIN-SK-M-698', '890095320942285', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(53, 11, 'denim', 'S', 4, 'SHI-ME-LIN-DE-S-197', '890096048012698', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(54, 11, 'pink', 'S', 4, 'SHI-ME-LIN-PI-S-390', '890096229702300', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(55, 11, 'white', 'XS', 1, 'SHI-ME-LIN-WH-XS-678', '890096403885066', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(56, 11, 'sky blue', 'S', 2, 'SHI-ME-LIN-SK-S-302', '890096544616148', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(57, 11, 'pink', 'XL', 4, 'SHI-ME-LIN-PI-XL-543', '890104639318150', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(58, 11, 'sky blue', 'XL', 5, 'SHI-ME-LIN-SK-XL-897', '890104830351698', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(59, 11, 'white', 'XL', 6, 'SHI-ME-LIN-WH-XL-33', '890105329662438', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(60, 11, 'sandler stripe', 'XL', 2, 'SHI-ME-LIN-SA-XL-766', '890106126108206', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(61, 11, 'light beige', 'XL', 1, 'SHI-ME-LIN-LI-XL-10', '890106440949521', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(62, 11, 'denim', 'L', 4, 'SHI-ME-LIN-DE-L-483', '890107168562796', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(63, 11, 'dust green', 'L', 3, 'SHI-ME-LIN-DU-L-461', '890107400244907', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(64, 11, 'sky blue', 'L', 2, 'SHI-ME-LIN-SK-L-541', '890107573348260', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(65, 11, 'yellow', 'L', 1, 'SHI-ME-LIN-YE-L-35', '890107634664939', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(66, 11, 'sandler stripe', 'L', 3, 'SHI-ME-LIN-SA-L-583', '890107880966861', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(67, 11, 'biscuit stripe', 'L', 3, 'SHI-ME-LIN-BI-L-991', '890109172121363', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(68, 11, 'pink', 'L', 4, 'SHI-ME-LIN-PI-L-480', '890109367253610', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(69, 11, 'denim stripe', 'L', 1, 'SHI-ME-LIN-DE-L-487', '890109566214643', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(70, 11, 'sky stripe', 'L', 2, 'SHI-ME-LIN-SK-L-163', '890110039944056', '2026-07-17 17:57:38', '2026-07-17 17:57:38'),
+(71, 12, 'biscuit', 'M', 6, 'SHI-ME-LIN-BI-M-662', '890381788352823', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(72, 12, 'white', 'M', 3, 'SHI-ME-LIN-WH-M-621', '890381864723604', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(73, 12, 'light dust green', 'M', 1, 'SHI-ME-LIN-LI-M-903', '890381971616467', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(74, 12, 'sky blue', 'M', 1, 'SHI-ME-LIN-SK-M-781', '890382197441105', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(75, 12, 'denim', 'M', 1, 'SHI-ME-LIN-DE-M-257', '890382243086370', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(76, 12, 'royal blue', 'M', 1, 'SHI-ME-LIN-RO-M-461', '890382268568828', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(77, 12, 'dust green', 'S', 1, 'SHI-ME-LIN-DU-S-670', '890382671623200', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(78, 12, 'white', 'S', 2, 'SHI-ME-LIN-WH-S-946', '890382771093559', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(79, 12, 'royal blue', 'S', 3, 'SHI-ME-LIN-RO-S-595', '890383053660160', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(80, 12, 'denim', 'XL', 5, 'SHI-ME-LIN-DE-XL-929', '890383765082186', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(81, 12, 'royal blue', 'XL', 2, 'SHI-ME-LIN-RO-XL-301', '890383952537783', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(82, 12, 'biscuit', 'XL', 2, 'SHI-ME-LIN-BI-XL-0', '890384062047294', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(83, 12, 'sky blue', 'XL', 1, 'SHI-ME-LIN-SK-XL-536', '890384220554803', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(84, 12, 'dust green', 'XL', 1, 'SHI-ME-LIN-DU-XL-380', '890384336460672', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(85, 12, 'denim', 'L', 4, 'SHI-ME-LIN-DE-L-666', '890384486922099', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(86, 12, 'dust green', 'L', 1, 'SHI-ME-LIN-DU-L-547', '890384591526710', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(87, 12, 'royal blue', 'L', 3, 'SHI-ME-LIN-RO-L-324', '890384685368381', '2026-07-19 05:21:18', '2026-07-19 05:21:18'),
+(88, 13, 'grigio', '32', 1, 'SHO-ME-BER-GR-32-961', '890857429905421', '2026-07-19 18:29:15', '2026-07-19 18:29:15'),
+(89, 14, 'sandstone', '31/32', 1, 'PAN-ME-MOD-SA-313-798', '890863847931817', '2026-07-19 18:39:55', '2026-07-19 18:39:55'),
+(90, 15, 'black', 'S', 1, 'PAN-WO-COM-BL-S-753', '890868440341521', '2026-07-19 18:47:31', '2026-07-19 18:47:31'),
+(91, 16, 'black', 'S', 2, 'T-S-ME-PAL-BL-S-245', '890497248614479', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(92, 16, 'navy', 'S', 2, 'T-S-ME-PAL-NA-S-893', '890497405048026', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(93, 16, 'red', 'S', 1, 'T-S-ME-PAL-RE-S-380', '890497777588482', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(94, 16, 'black', 'M', 1, 'T-S-ME-PAL-BL-M-516', '890498198184521', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(95, 16, 'navy', 'M', 3, 'T-S-ME-PAL-NA-M-459', '890498313868523', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(96, 16, 'green', 'M', 2, 'T-S-ME-PAL-GR-M-721', '890498420828248', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(97, 16, 'red', 'M', 2, 'T-S-ME-PAL-RE-M-411', '890498588307825', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(98, 16, 'navy', 'L', 5, 'T-S-ME-PAL-NA-L-184', '890498809850147', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(99, 16, 'green', 'L', 1, 'T-S-ME-PAL-GR-L-816', '890499205585052', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(100, 16, 'red', 'L', 2, 'T-S-ME-PAL-RE-L-758', '890499338837831', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(101, 16, 'black', 'L', 2, 'T-S-ME-PAL-BL-L-788', '890499421888613', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(102, 16, 'red', 'XL', 1, 'T-S-ME-PAL-RE-XL-257', '890499598007325', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(103, 16, 'black', 'XL', 1, 'T-S-ME-PAL-BL-XL-263', '890499751710734', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(104, 16, 'navy', 'XL', 3, 'T-S-ME-PAL-NA-XL-986', '890500455760888', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(105, 16, 'navy', 'XXL', 1, 'T-S-ME-PAL-NA-XXL-200', '890500564125011', '2026-07-20 12:23:45', '2026-07-20 12:23:45'),
+(106, 17, 'black', '24', 2, 'PAN-WO-LAD-BL-24-145', '890201955174363', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(107, 17, 'mid blue', '24', 1, 'PAN-WO-LAD-MI-24-441', '890202405448129', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(108, 17, 'pink', '25', 1, 'PAN-WO-LAD-PI-25-452', '890202637465237', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(109, 17, 'mid blue', '25', 1, 'PAN-WO-LAD-MI-25-778', '890202694470132', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(110, 17, 'denim blue', '25', 1, 'PAN-WO-LAD-DE-25-128', '890202749790458', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(111, 17, 'black', '26', 3, 'PAN-WO-LAD-BL-26-474', '890203206458215', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(112, 17, 'mid blue', '26', 1, 'PAN-WO-LAD-MI-26-821', '890203258393962', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(113, 17, 'washed blue', '26', 1, 'PAN-WO-LAD-WA-26-217', '890203337818692', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(114, 17, 'black', '27', 1, 'PAN-WO-LAD-BL-27-583', '890203637231506', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(115, 17, 'brown', '27', 1, 'PAN-WO-LAD-BR-27-484', '890203692660120', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(116, 17, 'mid blue', '27', 2, 'PAN-WO-LAD-MI-27-888', '890203757625027', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(117, 17, 'washed blue', '27', 1, 'PAN-WO-LAD-WA-27-184', '890203837607209', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(118, 17, 'mid blue', '28', 2, 'PAN-WO-LAD-MI-28-991', '890204348573772', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(119, 17, 'washed blue ', '29', 1, 'PAN-WO-LAD-WA-29-850', '890204421355148', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(120, 17, 'black', '29', 1, 'PAN-WO-LAD-BL-29-334', '890204461536599', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(121, 17, 'black', '31', 1, 'PAN-WO-LAD-BL-31-895', '890204740686079', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(122, 17, 'sky blue ', '32', 2, 'PAN-WO-LAD-SK-32-68', '890204804600110', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(123, 17, 'black', '32', 2, 'PAN-WO-LAD-BL-32-413', '890204977753226', '2026-07-30 14:08:56', '2026-07-30 14:08:56'),
+(124, 17, 'denim blue', '34', 1, 'PAN-WO-LAD-DE-34-647', '890205056436520', '2026-07-30 14:08:56', '2026-07-30 14:08:56');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `system_access`
+--
+
+CREATE TABLE `system_access` (
+  `id` int(11) NOT NULL,
+  `employee_id` int(11) NOT NULL,
+  `username` varchar(50) NOT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `salt` varchar(64) NOT NULL,
+  `role` enum('admin','manager','cashier') NOT NULL DEFAULT 'cashier',
+  `last_login_at` datetime DEFAULT NULL,
+  `last_logout_at` datetime DEFAULT NULL,
+  `current_session_id` varchar(255) DEFAULT NULL,
+  `failed_attempts` int(11) DEFAULT 0,
+  `last_failed_attempt` datetime DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `system_access`
+--
+
+INSERT INTO `system_access` (`id`, `employee_id`, `username`, `password_hash`, `salt`, `role`, `last_login_at`, `last_logout_at`, `current_session_id`, `failed_attempts`, `last_failed_attempt`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 2, 'nizam.admin', 'bef5eb6f55d76c5c4470e85669ad50d51f5544ca520e811abf1f4f3db7edde52', '951b96e7a9f6c3dcb4a0417ff2a926ac', 'admin', '2026-07-29 20:36:40', '2026-07-14 16:34:12', 'session_ms67wsr2_upalpe', 0, '2026-07-14 16:35:05', 1, '2026-07-14 10:52:45', '2026-07-29 20:36:40');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `system_access_logs`
+--
+
+CREATE TABLE `system_access_logs` (
+  `id` int(11) NOT NULL,
+  `employee_id` int(11) DEFAULT NULL,
+  `action` enum('login','logout','login_failed') NOT NULL,
+  `session_id` varchar(255) DEFAULT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `user_agent` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  `status` enum('success','failed') NOT NULL,
+  `failure_reason` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `system_access_logs`
+--
+
+INSERT INTO `system_access_logs` (`id`, `employee_id`, `action`, `session_id`, `ip_address`, `user_agent`, `created_at`, `status`, `failure_reason`) VALUES
+(1, 2, 'login', 'Unknown', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15', '2026-07-14 16:17:55', 'success', NULL),
+(2, 2, 'login', 'session_mrkjmtq4_ffsqph', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15', '2026-07-14 16:33:54', 'success', NULL),
+(3, 2, 'logout', 'session_mrkjmtq4_ffsqph', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15', '2026-07-14 16:34:12', 'success', NULL),
+(4, 2, 'login_failed', 'session_mrkjoclf_tvsmxk', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15', '2026-07-14 16:35:05', 'failed', 'Incorrect password'),
+(5, 2, 'login', 'session_mrkjoeno_9o8dm5', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15', '2026-07-14 16:35:08', 'success', NULL),
+(6, 2, 'login', 'session_mrlwzmmm_hz9wcq', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.2 Safari/605.1.15', '2026-07-15 15:35:32', 'success', NULL),
+(7, 2, 'login', 'session_ms1emgsh_mbmi46', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-26 11:45:44', 'success', NULL),
+(8, 2, 'login', 'session_ms1enmkq_qyzfkl', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-26 11:46:38', 'success', NULL),
+(9, 2, 'login', 'session_ms1esawu_f75o04', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-26 11:50:16', 'success', NULL),
+(10, 2, 'login', 'session_ms1ywe84_glx4xc', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-26 21:13:20', 'success', NULL),
+(11, 2, 'login', 'session_ms1z3ddo_z0r1av', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-26 21:18:45', 'success', NULL),
+(12, 2, 'login', 'session_ms67wsr2_upalpe', '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5.2 Safari/605.1.15', '2026-07-29 20:36:40', 'success', NULL);
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `alembic_version`
+--
+ALTER TABLE `alembic_version`
+  ADD PRIMARY KEY (`version_num`);
+
+--
+-- Indexes for table `cashier_ledger`
+--
+ALTER TABLE `cashier_ledger`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_cashier` (`cashier_id`),
+  ADD KEY `idx_transaction_date` (`transaction_date`),
+  ADD KEY `idx_reference` (`reference_id`),
+  ADD KEY `idx_type` (`transaction_type`),
+  ADD KEY `idx_payment_method` (`payment_method`),
+  ADD KEY `idx_cashier_ledger_session_id` (`session_id`),
+  ADD KEY `idx_cashier_ledger_is_posted` (`is_posted`);
+
+--
+-- Indexes for table `courier_cod_ledger`
+--
+ALTER TABLE `courier_cod_ledger`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_partner` (`delivery_partner_id`),
+  ADD KEY `idx_transaction_date` (`transaction_date`),
+  ADD KEY `idx_reference` (`reference_id`);
+
+--
+-- Indexes for table `customers`
+--
+ALTER TABLE `customers`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `idx_email` (`email`),
+  ADD KEY `idx_phone` (`phone`),
+  ADD KEY `idx_tier` (`tier`),
+  ADD KEY `idx_loyalty_points` (`loyalty_points`);
+
+--
+-- Indexes for table `customer_addresses`
+--
+ALTER TABLE `customer_addresses`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_customer_id` (`customer_id`),
+  ADD KEY `idx_is_default` (`is_default`);
+
+--
+-- Indexes for table `delivery_partners`
+--
+ALTER TABLE `delivery_partners`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code` (`code`),
+  ADD KEY `idx_code` (`code`);
+
+--
+-- Indexes for table `employees`
+--
+ALTER TABLE `employees`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `employee_id` (`employee_id`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `nic` (`nic`),
+  ADD KEY `reports_to` (`reports_to`);
+
+--
+-- Indexes for table `loyalty_transactions`
+--
+ALTER TABLE `loyalty_transactions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `processed_by` (`processed_by`),
+  ADD KEY `idx_customer_id` (`customer_id`),
+  ADD KEY `idx_created_at` (`created_at`);
+
+--
+-- Indexes for table `orders`
+--
+ALTER TABLE `orders`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `order_number` (`order_number`),
+  ADD KEY `idx_order_number` (`order_number`),
+  ADD KEY `idx_customer` (`customer_id`),
+  ADD KEY `idx_staff` (`staff_id`),
+  ADD KEY `idx_status` (`order_status`),
+  ADD KEY `idx_created` (`created_at`),
+  ADD KEY `idx_payment_status` (`payment_status`);
+
+--
+-- Indexes for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_order` (`order_id`),
+  ADD KEY `idx_variant` (`product_variant_id`),
+  ADD KEY `idx_sku` (`sku`);
+
+--
+-- Indexes for table `products`
+--
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `product_variants`
+--
+ALTER TABLE `product_variants`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `sku` (`sku`),
+  ADD UNIQUE KEY `barcode` (`barcode`),
+  ADD KEY `product_id` (`product_id`);
+
+--
+-- Indexes for table `system_access`
+--
+ALTER TABLE `system_access`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `employee_id` (`employee_id`),
+  ADD UNIQUE KEY `username` (`username`);
+
+--
+-- Indexes for table `system_access_logs`
+--
+ALTER TABLE `system_access_logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_employee_id` (`employee_id`),
+  ADD KEY `idx_session_id` (`session_id`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `cashier_ledger`
+--
+ALTER TABLE `cashier_ledger`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `courier_cod_ledger`
+--
+ALTER TABLE `courier_cod_ledger`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `customers`
+--
+ALTER TABLE `customers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `customer_addresses`
+--
+ALTER TABLE `customer_addresses`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `delivery_partners`
+--
+ALTER TABLE `delivery_partners`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `employees`
+--
+ALTER TABLE `employees`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `loyalty_transactions`
+--
+ALTER TABLE `loyalty_transactions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `orders`
+--
+ALTER TABLE `orders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `products`
+--
+ALTER TABLE `products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+
+--
+-- AUTO_INCREMENT for table `product_variants`
+--
+ALTER TABLE `product_variants`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
+
+--
+-- AUTO_INCREMENT for table `system_access`
+--
+ALTER TABLE `system_access`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `system_access_logs`
+--
+ALTER TABLE `system_access_logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `cashier_ledger`
+--
+ALTER TABLE `cashier_ledger`
+  ADD CONSTRAINT `cashier_ledger_ibfk_1` FOREIGN KEY (`cashier_id`) REFERENCES `employees` (`id`);
+
+--
+-- Constraints for table `courier_cod_ledger`
+--
+ALTER TABLE `courier_cod_ledger`
+  ADD CONSTRAINT `courier_cod_ledger_ibfk_1` FOREIGN KEY (`delivery_partner_id`) REFERENCES `delivery_partners` (`id`);
+
+--
+-- Constraints for table `customer_addresses`
+--
+ALTER TABLE `customer_addresses`
+  ADD CONSTRAINT `customer_addresses_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `employees`
+--
+ALTER TABLE `employees`
+  ADD CONSTRAINT `employees_ibfk_1` FOREIGN KEY (`reports_to`) REFERENCES `employees` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `loyalty_transactions`
+--
+ALTER TABLE `loyalty_transactions`
+  ADD CONSTRAINT `loyalty_transactions_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `loyalty_transactions_ibfk_2` FOREIGN KEY (`processed_by`) REFERENCES `employees` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `orders`
+--
+ALTER TABLE `orders`
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`staff_id`) REFERENCES `employees` (`id`);
+
+--
+-- Constraints for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`product_variant_id`) REFERENCES `product_variants` (`id`);
+
+--
+-- Constraints for table `product_variants`
+--
+ALTER TABLE `product_variants`
+  ADD CONSTRAINT `product_variants_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
+
+--
+-- Constraints for table `system_access`
+--
+ALTER TABLE `system_access`
+  ADD CONSTRAINT `system_access_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `system_access_logs`
+--
+ALTER TABLE `system_access_logs`
+  ADD CONSTRAINT `system_access_logs_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE;
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
